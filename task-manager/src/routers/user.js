@@ -7,25 +7,12 @@ router.get('/users/profile', auth, async (req, res) => {
     res.send(req.user)
 })
 
-router.get('/user/:id', async (req, res) => {
-    const _id = req.params.id
-    try {
-        const user = await User.findById(_id)
-        if (!user) {
-            return res.status(404).send()
-        }
-        res.send(user)
-    } catch (error) {
-        res.status(500).send()
-    }
-})
-
 router.post('/users/login', async (req, res) => {
     const { email, password } = req.body
     try {
         const user = await User.findByCredentials(email, password)
         const token = await user.generateAuthToken()
-        res.send({user, token})
+        res.send({ user, token })
     } catch (error) {
         res.status(400).send()
     }
@@ -56,45 +43,35 @@ router.post('/users', async (req, res) => {
     try {
         await newUser.save()
         const token = await newUser.generateAuthToken()
-        res.status(201).send({newUser, token})
+        res.status(201).send({ newUser, token })
     } catch (error) {
         res.status(400).send(error)
     }
 })
 
-router.patch('/user/:id', async (req, res) => {
-    const _id = req.params.id
+router.patch('/user/profile', auth, async (req, res) => {
     const allowedUpdates = ['name', 'email', 'password']
     const updates = Object.keys(req.body)
     const isValidOperation = updates.every((update) => {
         return allowedUpdates.includes(update)
     })
-
+    
     if (!isValidOperation) {
         return res.status(400).send({ error: 'Invalid Operation' })
     }
     try {
-        const user = await User.findById(_id)
-        updates.forEach((update) => user[update] = res.body[update])
-        await user.save()
-        // const user = await User.findByIdAndUpdate(_id, req.body, { new: true, runValidators: true })
-        if (!user) {
-            return res.status(404).send()
-        }
-        res.send(user)
+        updates.forEach((update) => req.user[update] = req.body[update])
+        await req.user.save()
+        res.send(req.user)
     } catch (error) {
-        res.status(400).send(error)
+        res.status(400).send({error})
     }
 })
 
-router.delete('/user/:id', async (req, res) => {
-    const _id = req.params.id
+router.delete('/user/profile', auth, async (req, res) => {
     try {
-        const user = await User.findByIdAndDelete(_id)
-        if (!user) {
-            return res.status(404).send()
-        }
-        res.send(user)
+        await req.user.remove()
+        res.send(req.user)
     } catch (error) {
         res.status(500).send()
     }
