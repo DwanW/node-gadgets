@@ -76,7 +76,6 @@ router.patch('/task/:id', auth, async (req, res) => {
     }
     try {
         const task = await Task.findOne({ _id, owner: req.user._id})
-        console.log(task)
         if(!task) {
             return res.status(404).send()
         }

@@ -8,3 +8,5 @@ mongoose.connect(connectionURL, {
     useCreateIndex: true,
     useFindAndModify: false
 })
+
+//mongoose.connection.close()
