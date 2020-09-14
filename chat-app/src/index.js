@@ -9,7 +9,7 @@ app.use(express.static(publicDirectory))
 
 app.get('', (req, res) => {
     res.render('index', {
-        title: 'Weather App',
+        title: 'Chat App',
         name: 'Dwan'
     })
 })
