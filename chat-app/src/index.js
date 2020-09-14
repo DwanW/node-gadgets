@@ -1,19 +1,28 @@
 const express = require('express')
+const http = require('http')
+const path = require('path')
+const socketio = require('socket.io')
 
 const app = express()
-const publicDirectory = path.join(__dirname, '../public')
+const server = http.createServer(app)
+
+const io = socketio(server)
 
 const port = process.env.PORT || 3000
+const publicDirectory = path.join(__dirname, '../public')
 
 app.use(express.static(publicDirectory))
 
-app.get('', (req, res) => {
-    res.render('index', {
-        title: 'Chat App',
-        name: 'Dwan'
+io.on('connection', (socket)=> {
+    console.log('New connection!')
+
+    socket.emit("message", "Welcome")
+
+    socket.on('updateChat', (message) => {
+        io.emit("message", message)
     })
 })
 
-app.listen(port, () => {
+server.listen(port, () => {
     console.log('Server start on port ' + port)
 })
