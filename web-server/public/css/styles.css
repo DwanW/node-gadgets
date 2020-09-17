@@ -42,14 +42,34 @@ header a {
 }
 
 input {
+    outline: none;
     border: 1px solid #cccccc;
-    padding: 8px
+    padding: 8px 12px
 }
 
 button {
+    outline: none;
     cursor: pointer;
     border: 1px solid #888888;
     background: #888888;
     color: white;
     padding: 8px;
+}
+
+button:hover {
+    background: #222222;
+}
+
+#locate {
+    margin: 20px 0
+}
+
+.portrait {
+    max-width: 100px;
+    height: auto
+}
+
+a {
+    text-decoration: none;
+    color: #888888;
 }

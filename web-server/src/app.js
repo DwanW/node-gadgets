@@ -39,52 +39,60 @@ app.get('/about', (req, res) => {
     })
 })
 
-app.get('/help', (req, res) => {
-    res.render('help', {
-        title: 'Help Page',
-        name: 'Dwan',
-        message: 'Help message'
-    })
-})
-
 app.get('/weather', (req, res) => {
-    if(!req.query.address){
+    if (!req.query.address && (!req.query.latitude && !req.query.longitude)) {
         return res.send({
-            error: 'You must provide an address'
+            error: 'You must provide a location'
         })
     }
-    geocode(req.query.address, (error, { latitude, longitude, location } = {}) => {
-        if (error) {
-            return res.send({
-                error: error,
-            })
-        }
-
-        forecast(latitude, longitude, (error, forecastData) => {
+    // use location query ?address=example
+    if (req.query.address) {
+        geocode(req.query.address, (error, { latitude, longitude, location } = {}) => {
             if (error) {
                 return res.send({
                     error: error,
                 })
             }
 
-            res.send({
-                forecast: forecastData,
-                location,
-                address: req.query.address
+            forecast(latitude, longitude, (error, forecastData) => {
+                if (error) {
+                    return res.send({
+                        error: error,
+                    })
+                }
+
+                res.send({
+                    forecast: forecastData,
+                    location,
+                    address: req.query.address
+                })
             })
         })
-    })
+    } else {
+        // use coordinate query ?latitude=example&longitude=example 
+        forecast(req.query.latitude, req.query.longitude, (error, forecastData) => {
+            if (error) {
+                return res.send({
+                    error: error,
+                })
+            }
+            res.send({
+                forecast: forecastData,
+                address: `Latitude: ${parseInt(req.query.latitude).toFixed(2)}, Longitude : ${parseInt(req.query.longitude).toFixed(2)}`
+            })
+        })
+    }
 })
 
-app.get('/help/*', (req,res)=> {
+app.get('/help/*', (req, res) => {
     res.render('404', {
         title: '404',
         name: 'Dwan',
-        message:'The Help you are looking for cannot be found'
+        message: 'The Help you are looking for cannot be found'
     })
 })
 
-app.get('*', (req,res)=> {
+app.get('*', (req, res) => {
     res.render('404', {
         title: '404',
         name: 'Dwan',
