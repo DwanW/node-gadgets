@@ -1,6 +1,8 @@
 const express = require('express')
 const Task = require('../models/task')
 const auth = require('../middleware/auth')
+const multer = require('multer')
+const sharp = require('sharp')
 const router = new express.Router()
 
 // GET /task?completed=true
@@ -45,6 +47,44 @@ router.get('/task/:id', auth, async (req, res) => {
             return res.status(404).send()
         }
         res.send(task)
+    } catch (error) {
+        res.status(500).send()
+    }
+})
+
+const upload = multer({
+    // dest: 'avatar',
+    limits: {
+        fileSize: 1000000
+    },
+    fileFilter(req, file, cb){
+        if(!file.originalname.match(/\.(jpg|png|jpeg)$/)){
+            return cb(new Error('File must be a jpg,jpeg or png file'))
+        }
+        cb(undefined, true)
+    }
+})
+
+router.post('/task/:id', auth, upload.single('image'), async (req, res) => {
+    const buffer = await sharp(req.file.buffer).resize({ width: 250, height: 250}).png().toBuffer()
+    const _id = req.params.id
+    const task = await Task.findOne({_id, owner: req.user._id})
+
+    task.image = buffer
+    await task.save()
+    res.send()
+}, (error, req, res, next) => {
+    res.status(400).send({ error: error.message })
+})
+
+router.delete('/task/image/:id', auth, async (req, res) => {
+    try {
+        const _id = req.params.id
+        const task = await Task.findOne({_id, owner: req.user._id})
+
+        task.image = undefined
+        await task.save()
+        res.send()
     } catch (error) {
         res.status(500).send()
     }
