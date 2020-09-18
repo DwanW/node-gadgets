@@ -12,11 +12,27 @@
                <form action="/chat.html">
                    <label>Display name</label>
                    <input type="text" name="username" placeholder="Display name" required  autocomplete="off">
-                   <label>Room</label>
+                   <label>Room</label> 
+                   <span>
+                    <select id="dropdown">
+                        <option value="" disabled selected>Select an active room</option>
+                    </select>
+                    </span>
                    <input type="text" name="room" placeholder="Room" required autocomplete="off">
                    <button>Join</button>
                </form>
            </div>
        </div>
+
+    <script id="dropdown-template", type="text/html">
+                <option value="" disabled selected>Select an active room</option>
+            {{#rooms}}
+                <option value={{roomName}}>{{roomName}} - online:{{activeUserNumber}}</option>
+            {{/rooms}}
+    </script>
+
+       <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/3.0.1/mustache.min.js"></script>
+       <script src="/socket.io/socket.io.js"></script>
+       <script src="/js/active-room.js"></script>
     </body>
 </html>

@@ -5,6 +5,7 @@ const socketio = require('socket.io')
 const Filter = require('bad-words')
 const { generateMessage, generateLocationMessage } = require('./utils/messages')
 const { addUser, removeUser, getUser, getUsersInRoom } = require('./utils/users')
+const { rooms, updateRoom} = require('./utils/rooms')
 
 
 const app = express()
@@ -17,6 +18,8 @@ const publicDirectory = path.join(__dirname, '../public')
 
 app.use(express.static(publicDirectory))
 
+io.emit("allRoomsData", rooms)
+
 io.on('connection', (socket) => {
     socket.on('join', ({ username, room }, callback) => {
         const { error, user } = addUser({ id: socket.id, username, room })
@@ -27,12 +30,15 @@ io.on('connection', (socket) => {
 
         socket.join(user.room)
 
+        updateRoom(room, 1)
+
         socket.emit("message", generateMessage('Chat Bot', 'Welcome!'))
         socket.broadcast.to(user.room).emit('message', generateMessage('Chat Bot', `${user.username} has joined!`))
         io.to(user.room).emit('roomData', {
             room: user.room,
             users: getUsersInRoom(user.room)
         })
+        io.emit("allRoomsData", rooms)
         callback()
     })
 
@@ -58,11 +64,13 @@ io.on('connection', (socket) => {
         const user = removeUser(socket.id)
 
         if(user){
+            updateRoom(user.room, -1)
             io.to(user.room).emit("message", generateMessage('Chat Bot',`${user.username} has left`))
             io.to(user.room).emit('roomData', {
                 room: user.room,
                 users: getUsersInRoom(user.room)
             })
+            io.emit("allRoomsData", rooms)
         }
 
     })
